@@ -51,15 +51,25 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
-      # ✅ FIX 1: Ensure DB is created before migrate/prepare
+      # -----------------------------
+      # DB setup (safe + standard)
+      # -----------------------------
       - name: Setup test database
-        run: |
-          bundle exec rails db:create db:schema:load
+        run: bundle exec rails db:prepare
 
-      # ✅ FIX 2: Fail fast if Sidekiq-related code depends on Redis
-      - name: Verify Redis connectivity (safe check)
+      # -----------------------------
+      # Redis connectivity check
+      # (safe multiline YAML)
+      # -----------------------------
+      - name: Verify Redis connectivity
         run: |
-          ruby -e "require 'redis'; r = Redis.new(url: ENV['REDIS_URL']); puts r.ping"
+          bundle exec ruby -e "
+            require 'redis'
+            puts Redis.new(url: ENV['REDIS_URL']).ping
+          "
 
+      # -----------------------------
+      # Run test suite
+      # -----------------------------
       - name: Run RSpec
         run: bundle exec rspec
