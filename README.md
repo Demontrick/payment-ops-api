@@ -1,6 +1,6 @@
 # Payment Ops API
 
-![CI](https://github.com/YOUR_USERNAME/payment-ops-api/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Demontrick/payment-ops-api/actions/workflows/ci.yml/badge.svg)
 
 ---
 
