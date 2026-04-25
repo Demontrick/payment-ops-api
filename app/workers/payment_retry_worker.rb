@@ -7,13 +7,12 @@ class PaymentRetryWorker
     payment = Payment.find_by(id: payment_id)
     return unless payment
 
-    # Prevent retrying completed/terminal states
-    return if payment.status == "approved" || payment.status == "flagged"
+    # -----------------------------
+    # HARD SAFETY LIMIT (prevents overflow)
+    # -----------------------------
+    return if payment.retry_count >= MAX_RETRIES
 
-    payment.with_lock do
-      payment.increment!(:retry_count)
-      return if payment.retry_count > MAX_RETRIES
-    end
+    payment.increment!(:retry_count)
 
     success = simulate_payment_attempt(payment)
 
@@ -24,7 +23,6 @@ class PaymentRetryWorker
         worker: self.class.name,
         meta: { retry: "success" }
       )
-
     else
       if payment.retry_count >= MAX_RETRIES
         PaymentStateEngine.move_to!(
