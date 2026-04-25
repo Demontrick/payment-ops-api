@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
+  port: 5432
+  username: postgres
+  password: postgres
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: payment_ops_api_development
+
+test:
+  <<: *default
+  database: payment_ops_api_test
+
+production:
+  <<: *default
+  database: payment_ops_api_production
+  username: postgres
+  password: postgres
