@@ -42,7 +42,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Ruby
+      - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2
@@ -51,10 +51,15 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
-      - name: Setup database
+      # ✅ FIX 1: Ensure DB is created before migrate/prepare
+      - name: Setup test database
         run: |
-          bundle exec rails db:create
-          bundle exec rails db:migrate
+          bundle exec rails db:create db:schema:load
 
-      - name: Run RSpec tests
+      # ✅ FIX 2: Fail fast if Sidekiq-related code depends on Redis
+      - name: Verify Redis connectivity (safe check)
+        run: |
+          ruby -e "require 'redis'; r = Redis.new(url: ENV['REDIS_URL']); puts r.ping"
+
+      - name: Run RSpec
         run: bundle exec rspec
